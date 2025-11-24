@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +28,7 @@ public class UserController {
     }
 
     @PostMapping
-    public User add(@RequestBody @NonNull User user) {
-        user.validate();
+    public User add(@RequestBody @Valid User user) {
         user.setId(getNewId());
         users.put(user.getId(), user);
         log.info("User {} added", user.toString());
@@ -37,7 +37,6 @@ public class UserController {
 
     @PutMapping
     public User update(@RequestBody @NonNull User user) {
-        user.validate();
         int id = user.getId();
         if (users.containsKey(id)) {
             users.put(id, user);

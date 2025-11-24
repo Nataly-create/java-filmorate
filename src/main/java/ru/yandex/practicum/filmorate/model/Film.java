@@ -1,5 +1,9 @@
 package ru.yandex.practicum.filmorate.model;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
 import org.slf4j.Logger;
@@ -8,32 +12,24 @@ import ru.yandex.practicum.filmorate.exeption.ValidationException;
 
 import java.time.LocalDate;
 
-/**
- * Film.
- */
 @Data
 @Builder
 public class Film {
     private static final Logger log = LoggerFactory.getLogger(Film.class);
     private int id;
-    @Builder.Default
-    private String name = "";
+    @NotBlank
+    @NotNull
+    private String name;
+    @Size(min = 1, max = 200)
     private String description;
+    @NotNull
     private LocalDate releaseDate;
-    private int duration;
+    @Min(1)
+    private long duration;
 
     public void validate() {
         StringBuilder message = new StringBuilder();
-        if (getName().isEmpty()) {
-            message.append("Name is required\n");
-        }
-        if (getDescription() != null && getDescription().length() > 200) {
-            message.append("Description must be 200 characters or less\n");
-        }
-        if (getDuration() <= 0) {
-            message.append("Duration must be positive\n");
-        }
-        if (getReleaseDate() != null && getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
+        if (getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             message.append("The release date must be on or after December 28, 1895\n");
         }
         if (!message.isEmpty()) {

@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate;
 
-import com.sun.net.httpserver.HttpServer;
 import ch.qos.logback.classic.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,8 +10,6 @@ import java.time.LocalDate;
 
 @SpringBootApplication
 public class FilmorateApplication {
-	private  static final int PORT = 8080;
-	static HttpServer httpServer;
 	private static final Logger log = LoggerFactory.getLogger(FilmorateApplication.class);
 
 	public static void main(String[] args) {

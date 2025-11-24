@@ -1,5 +1,9 @@
 package ru.yandex.practicum.filmorate.model;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
 import lombok.Builder;
 import lombok.Data;
 import org.slf4j.Logger;
@@ -12,30 +16,19 @@ import java.time.LocalDate;
 public class User {
   private static final Logger log = LoggerFactory.getLogger(User.class);
   private Integer id;
-  @Builder.Default
-  private String email = "";
-  @Builder.Default
-  private final String login = "";
+  @Email
+  @NotNull
+  private String email;
+  @NotNull
+  @NotBlank
+  private final String login;
   private String name;
+  @Past
   private LocalDate birthday;
 
   public void validate() {
     StringBuilder message = new StringBuilder();
-    if (getEmail().isEmpty()) {
-      message.append("Email is required\n");
-    }
-    if (!getEmail().contains("@")) {
-      message.append("Email must contain an @ symbol\n");
-    }
-    if (getLogin().isEmpty()) {
-      message.append("Login is required\n");
-    }
-    if (getLogin().contains(" ")) {
-      message.append("Login must not contain space\n");
-    }
-    if (getBirthday() != null && getBirthday().isAfter(LocalDate.now())) {
-      message.append("Birthday must be earlier than today");
-    }
+
     if (!message.isEmpty()) {
       String errorMessage = message.toString().trim();
       log.warn("User {}.\n{}", this.toString(), errorMessage);

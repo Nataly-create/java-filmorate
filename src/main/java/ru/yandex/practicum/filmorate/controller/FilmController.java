@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.Data;
-import lombok.NonNull;
+import jakarta.validation.Valid;
+import lombok.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +12,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-@Data
+@Getter
+@Setter
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/films")
 public class FilmController {
@@ -29,7 +31,7 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film add(@RequestBody Film film) {
+    public Film add(@RequestBody @Valid Film film) {
         film.validate();
         film.setId(getNewId());
         films.put(film.getId(), film);

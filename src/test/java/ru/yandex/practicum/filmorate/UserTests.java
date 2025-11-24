@@ -1,16 +1,20 @@
 package ru.yandex.practicum.filmorate;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.exeption.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @SpringBootTest
 public class UserTests {
+    private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     @Test
     public void testEmailEmpty() {
@@ -21,7 +25,8 @@ public class UserTests {
                 .birthday(LocalDate.of(2000, 1, 1))
                 .login("login")
                 .build();
-        assertThrows(ValidationException.class, () -> user.validate());
+        Set<ConstraintViolation<User>> res = validator.validate(user);
+        assertFalse(res.isEmpty(), "Validation should fail for a empty email");
     }
 
     @Test
@@ -34,7 +39,8 @@ public class UserTests {
                 .birthday(LocalDate.of(2000, 1, 1))
                 .login("login")
                 .build();
-        assertThrows(ValidationException.class, () -> user.validate());
+        Set<ConstraintViolation<User>> res = validator.validate(user);
+        assertFalse(res.isEmpty(), "Validation should fail for a email without at");
     }
 
     @Test
@@ -47,7 +53,8 @@ public class UserTests {
                 .email("email@email")
                 .birthday(tomorrow)
                 .build();
-        assertThrows(ValidationException.class, () -> user.validate());
+        Set<ConstraintViolation<User>> res = validator.validate(user);
+        assertFalse(res.isEmpty(), "Validation should fail for a birthday tomorrow");
     }
 
     @Test
@@ -58,6 +65,7 @@ public class UserTests {
                 .email("email@email")
                 .birthday(LocalDate.of(200, 1, 1))
                 .build();
-        assertThrows(ValidationException.class, () -> user.validate());
+        Set<ConstraintViolation<User>> res = validator.validate(user);
+        assertFalse(res.isEmpty(), "Validation should fail for a spase in login");
     }
 }
