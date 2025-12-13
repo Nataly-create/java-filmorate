@@ -2,66 +2,61 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exeption.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
-    private static final Logger log = LoggerFactory.getLogger(UserController.class);
-    private final Map<Integer, User> users = new HashMap<>();
-
-    private int getNewId() {
-        int currentMaxId = users.keySet()
-                .stream()
-                .mapToInt(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
-    }
+private final UserService userService;
 
     @PostMapping
     public User add(@RequestBody @Valid User user) {
-        user.setId(getNewId());
-        users.put(user.getId(), user);
-        log.info("User {} added", user.toString());
-        return user;
+        return userService.add(user);
     }
 
     @PutMapping
     public User update(@RequestBody @NonNull User user) {
-        int id = user.getId();
-        if (users.containsKey(id)) {
-            users.put(id, user);
-            log.info("User {} updated", user.toString());
-            return user;
-        } else {
-            log.warn("User mit id {} not found", id);
-            throw new NotFoundException("User with id = " + id + " not found");
-        }
+        return userService.update(user);
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable long id, @PathVariable long friendId) {
+        userService.addFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}")
+    public User getById(@PathVariable long id) {
+        return userService.getById(id);
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<User> getFriendsById(@PathVariable long id) {
+        return userService.getFriendsById(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
+        return userService.getCommonFriends(id, otherId);
     }
 
     @GetMapping
-    public Collection<User> getAll() {
-        return users.values();
+    public List<User> getAll() {
+        return userService.getAll();
     }
 
     @DeleteMapping
     public void delete(@RequestBody @NonNull User user) {
-        int id = user.getId();
-        if (users.containsKey(id)) {
-            log.info("User {} deleted", user.toString());
-            users.remove(id);
-        } else {
-            log.warn("User mit id {} not found", id);
-            throw new NotFoundException("User with id = " + id + " not found");
-        }
+       userService.delete(user);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void deleteFriend(@PathVariable long id, @PathVariable long friendId) {
+        userService.deleteFriend(id, friendId);
     }
 }
