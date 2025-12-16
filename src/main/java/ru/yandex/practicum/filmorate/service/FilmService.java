@@ -6,9 +6,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -51,12 +49,8 @@ public class FilmService {
 
     public List<Film> getMostPopularFilms(int count) {
         return filmStorage.getAll().stream()
-                .collect(Collectors.toMap(x -> x, x -> x.getLikes().size()))
-                .entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
                 .limit(count)
-                .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
     }
 }
