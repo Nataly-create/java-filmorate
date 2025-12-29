@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exeption.NotFoundException;
@@ -11,6 +12,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
+@Qualifier("inMemoryUserStorage")
 public class InMemoryUserStorage implements UserStorage {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final Map<Long, User> users = new HashMap<>();
@@ -49,6 +51,16 @@ public class InMemoryUserStorage implements UserStorage {
             log.warn("User mit id {} not found", id);
             throw new NotFoundException(id, "User");
         }
+    }
+
+    @Override
+    public void addFriend(long id, long friendId) {
+        getById(id).getFriends().add(getById(friendId).getId());
+    }
+
+    @Override
+    public void deleteFriend(long id, long friendId) {
+        getById(id).getFriends().remove(getById(friendId).getId());
     }
 
     @Override

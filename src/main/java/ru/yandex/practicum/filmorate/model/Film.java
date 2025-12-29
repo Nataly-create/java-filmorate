@@ -27,6 +27,9 @@ public class Film {
     private LocalDate releaseDate;
     @Min(1)
     private long duration;
+    private Mpa mpa;
+    @Builder.Default
+    private HashSet<Genre> genres = new HashSet<>();
     @Builder.Default
     private HashSet<Long> likes = new HashSet<>();
 
@@ -35,6 +38,13 @@ public class Film {
             likes = new HashSet<>();
         }
         return likes;
+    }
+
+    public Set<Genre> getGenres() {
+        if (genres == null) {
+            genres = new HashSet<>();
+        }
+        return genres;
     }
 
     public void validate() {
