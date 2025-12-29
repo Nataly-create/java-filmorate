@@ -11,14 +11,15 @@ import org.slf4j.LoggerFactory;
 import ru.yandex.practicum.filmorate.exeption.ValidationException;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Builder
 public class Film {
     private static final Logger log = LoggerFactory.getLogger(Film.class);
-    private int id;
+    private long id;
     @NotBlank
-    @NotNull
     private String name;
     @Size(min = 1, max = 200)
     private String description;
@@ -26,6 +27,15 @@ public class Film {
     private LocalDate releaseDate;
     @Min(1)
     private long duration;
+    @Builder.Default
+    private HashSet<Long> likes = new HashSet<>();
+
+    public Set<Long> getLikes() {
+        if (likes == null) {
+            likes = new HashSet<>();
+        }
+        return likes;
+    }
 
     public void validate() {
         StringBuilder message = new StringBuilder();
