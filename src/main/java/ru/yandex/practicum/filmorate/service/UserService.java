@@ -10,7 +10,7 @@ import java.util.List;
 
 @Service
 public class UserService {
-    private final UserStorage userStorage;
+    public final UserStorage userStorage;
 
     UserService(@Autowired @Qualifier("userDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;

@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
-    private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
+    public final FilmStorage filmStorage;
+    public final UserStorage userStorage;
 
     FilmService(@Autowired @Qualifier("filmDbStorage") FilmStorage filmStorage, @Autowired @Qualifier("userDbStorage") UserStorage userStorage) {
         this.filmStorage = filmStorage;

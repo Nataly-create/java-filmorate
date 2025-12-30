@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,6 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Repository
 @Qualifier("filmDbStorage")
@@ -76,10 +76,10 @@ public class FilmDbStorage implements FilmStorage {
         if (id != null) {
             film.setId(Long.valueOf(id));
 
-            film.setGenres(film.getGenres().stream()
-                    .map(g -> genreStorage.getById(g.getId())).collect(Collectors.toCollection(LinkedHashSet::new)));
-
+            int[] ids = film.getGenres().stream().mapToInt(Genre::getId).toArray();
+            film.setGenres(new LinkedHashSet<>(genreStorage.getManyById(ids)));
             updateFilmsGenres(film);
+
             film.validate();
             log.info("Film {} added", film);
         }
@@ -88,9 +88,11 @@ public class FilmDbStorage implements FilmStorage {
 
     private void updateFilmsGenres(Film film) {
         jdbc.update(DELETE_FILMS_GENRE_QUERY, film.getId());
+        List<Object[]> params = new ArrayList<>();
         for (Genre g : film.getGenres()) {
-            jdbc.update(ADD_FILMS_GENRE_QUERY, film.getId(), g.getId());
+            params.add(new Object[]{film.getId(), g.getId()});
         }
+        jdbc.batchUpdate(ADD_FILMS_GENRE_QUERY, params);
     }
 
     public Film update(Film film) {
@@ -102,8 +104,9 @@ public class FilmDbStorage implements FilmStorage {
                 film.getReleaseDate(),
                 film.getDuration(),
                 id) > 0) {
-            film.setGenres(film.getGenres().stream()
-                    .map(g -> genreStorage.getById(g.getId())).collect(Collectors.toCollection(LinkedHashSet::new)));
+
+            int[] ids = film.getGenres().stream().mapToInt(Genre::getId).toArray();
+            film.setGenres(new LinkedHashSet<>(genreStorage.getManyById(ids)));
 
             updateFilmsGenres(film);
             film.validate();

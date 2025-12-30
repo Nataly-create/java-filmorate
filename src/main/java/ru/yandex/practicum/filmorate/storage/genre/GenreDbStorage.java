@@ -10,7 +10,9 @@ import ru.yandex.practicum.filmorate.controller.GenreController;
 import ru.yandex.practicum.filmorate.exeption.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -20,6 +22,7 @@ public class GenreDbStorage implements GenreStorage {
     private final GenreRowMapper rowMapper;
     private static final String GET_ALL_QUERY = "SELECT * FROM genre";
     private static final String GET_BY_ID_QUERY = "SELECT * FROM genre WHERE genre_id = ?";
+    private static final String GET_MANY_BY_ID_QUERY = "SELECT * FROM genre WHERE genre_id in (";
     private static final String GET_GENRE_BY_ID_QUERY =
             "SELECT f.genre_id genre_id, g.name name FROM films_genre f LEFT JOIN genre g " +
                     "on f.genre_id = g.genre_id WHERE f.film_id = ? ORDER BY f.genre_id";
@@ -27,6 +30,23 @@ public class GenreDbStorage implements GenreStorage {
     @Override
     public List<Genre> getAll() {
         return jdbc.query(GET_ALL_QUERY, rowMapper);
+    }
+
+    @Override
+    public List<Genre> getManyById(int[] ids) {
+        String params = Arrays.stream(ids).mapToObj(String::valueOf)
+                .collect(Collectors.joining(","));
+        List<Genre> res = jdbc.query(GET_MANY_BY_ID_QUERY + params + ")", rowMapper);
+        List<Integer> idRes = res.stream().map(Genre::getId).toList();
+        if (ids.length > res.size()) {
+            for (int id : ids) {
+                if (!idRes.contains(id)) {
+                    log.warn("Genre mit id {} not found", id);
+                    throw new NotFoundException(id, "Genre");
+                }
+            }
+        }
+        return res;
     }
 
     @Override
