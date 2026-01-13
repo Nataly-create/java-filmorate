@@ -1,17 +1,20 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
-import java.util.Set;
 
-@RequiredArgsConstructor
 @Service
 public class UserService {
-    private final UserStorage userStorage;
+    public final UserStorage userStorage;
+
+    UserService(@Autowired @Qualifier("userDbStorage") UserStorage userStorage) {
+        this.userStorage = userStorage;
+    }
 
     public User add(User user) {
         user.validate();
@@ -32,7 +35,7 @@ public class UserService {
     }
 
     public List<User> getFriendsById(long id) {
-        return  userStorage.getFriendsById(id);
+        return userStorage.getFriendsById(id);
     }
 
     public List<User> getCommonFriends(long id, long otherId) {
@@ -44,16 +47,10 @@ public class UserService {
     }
 
     public void addFriend(long id, long friendId) {
-        userStorage.getById(id).getFriends().add(friendId);
-        userStorage.getById(friendId).getFriends().add(id);
+        userStorage.addFriend(id, friendId);
     }
 
     public void deleteFriend(long id, long friendId) {
-        userStorage.getById(id).getFriends().remove(friendId);
-        userStorage.getById(friendId).getFriends().remove(id);
-    }
-
-    public Set<Long> allFriends(User user) {
-        return user.getFriends();
+        userStorage.deleteFriend(id, friendId);
     }
 }
