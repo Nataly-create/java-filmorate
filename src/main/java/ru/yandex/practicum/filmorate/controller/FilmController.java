@@ -47,11 +47,10 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getMostPopularFilms(@RequestParam(required = false) Optional<Integer> count) {
-        if (count.isEmpty()) {
-            count = Optional.of(10);
-        }
-        return filmService.getMostPopularFilms(count.get());
+    public List<Film> getMostPopularFilms(@RequestParam(required = false) Optional<Integer> count,
+                                          @RequestParam(required = false) Optional<Integer> genreId,
+                                          @RequestParam(required = false) Optional<Integer> year) {
+        return filmService.getMostPopularFilms(count, genreId, year);
     }
 
     @GetMapping
