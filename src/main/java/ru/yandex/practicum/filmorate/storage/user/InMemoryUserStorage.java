@@ -6,8 +6,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exeption.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -115,5 +120,19 @@ public class InMemoryUserStorage implements UserStorage {
                 .max()
                 .orElse(0);
         return ++currentMaxId;
+    }
+
+    public void addEvent(long userId, long entityId, EventType eventType, Operation operation) {
+        Event event = Event.builder()
+                .userId(userId)
+                .eventType(eventType)
+                .operation(operation)
+                .timestamp(Timestamp.valueOf(LocalDateTime.now()).toInstant().getEpochSecond())
+                .build();
+        getById(userId).getEvents().add(event);
+    }
+
+    public List<Event> getEvents(long id) {
+        return getById(id).getEvents();
     }
 }
