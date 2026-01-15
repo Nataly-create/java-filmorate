@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -67,22 +66,18 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
-    public List<Film> getMostPopularFilms(Optional<Integer> count, Optional<Integer> genreId, Optional<Integer> year) {
-        if (genreId.isEmpty() && year.isEmpty()) {
-            return getMostPopularFilms(count.orElse(10));
-        }
-
+    public List<Film> getMostPopularFilms(int count, Integer genreId, Integer year) {
         Stream<Film> stream = filmStorage.getAll().stream();
-        if (year.isPresent()) {
-            stream = stream.filter(f -> f.getReleaseDate().getYear() == year.get());
+        if (year != 0) {
+            stream = stream.filter(f -> f.getReleaseDate().getYear() == year);
         }
-        if (genreId.isPresent()) {
-            stream = stream.filter(f -> f.getGenres().contains(genreStorage.getById(genreId.get())));
+        if (genreId != null) {
+            stream = stream.filter(f -> f.getGenres().contains(genreStorage.getById(genreId)));
         }
 
         stream = stream.sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()));
-        if (count.isPresent()) {
-            stream = stream.limit(count.get());
+        if (count != 0) {
+            stream = stream.limit(count);
         }
         return stream.toList();
     }
