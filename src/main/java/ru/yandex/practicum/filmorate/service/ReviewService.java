@@ -43,7 +43,7 @@ public class ReviewService {
         if (!existing.getUserId().equals(review.getUserId())) {
             throw new ValidationException("Пользователь не должен меняться");
         }
-        if(!existing.getFilmId().equals(review.getFilmId())) {
+        if (!existing.getFilmId().equals(review.getFilmId())) {
             throw new ValidationException("Фильм не должен меняться");
         }
 
