@@ -127,7 +127,7 @@ public class InMemoryUserStorage implements UserStorage {
                 .userId(userId)
                 .eventType(eventType)
                 .operation(operation)
-                .timestamp(Timestamp.valueOf(LocalDateTime.now()).toInstant().getEpochSecond())
+                .timestamp(Timestamp.valueOf(LocalDateTime.now()).toInstant().toEpochMilli())
                 .build();
         getById(userId).getEvents().add(event);
     }

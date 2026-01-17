@@ -158,17 +158,6 @@ public class UserDbStorage implements UserStorage {
     @Override
     public void addEvent(long userId, long entityId, EventType eventType, Operation operation) {
         getById(userId);
-        switch (eventType) {
-            case EventType.FRIEND:
-                getById(entityId);
-                break;
-            case EventType.LIKE:
-                //filmStorage.getById(entityId);
-                break;
-            case EventType.REVIEW:
-                //    getById(entityId);
-                break;
-        }
         jdbc.update(ADD_EVENT_QUERY, userId, eventType.toString(), operation.toString(), entityId);
     }
 
