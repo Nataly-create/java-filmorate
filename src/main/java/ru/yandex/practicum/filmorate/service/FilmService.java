@@ -12,26 +12,20 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 
 @Service
 public class FilmService {
     private static final Logger log = LoggerFactory.getLogger(FilmService.class);
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final GenreStorage genreStorage;
     private final DirectorService directorService;
-    public final FilmStorage filmStorage;
-    public final UserStorage userStorage;
-    public final GenreStorage genreStorage;
 
-    FilmService(@Autowired @Qualifier("filmDbStorage") FilmStorage filmStorage,
-                @Autowired @Qualifier("userDbStorage") UserStorage userStorage,
-                @Autowired @Qualifier("genreDbStorage") GenreStorage genreStorage) {
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
                        @Qualifier("userDbStorage") UserStorage userStorage,
+                       GenreStorage genreStorage,
                        DirectorService directorService) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
@@ -117,15 +111,15 @@ public class FilmService {
 
     public List<Film> getMostPopularFilms(int count, Integer genreId, Integer year) {
         Stream<Film> stream = filmStorage.getAll().stream();
-        if (year != 0) {
+        if (year != null && year != 0) {
             stream = stream.filter(f -> f.getReleaseDate().getYear() == year);
         }
         if (genreId != null) {
             stream = stream.filter(f -> f.getGenres().contains(genreStorage.getById(genreId)));
         }
 
-        stream = stream.sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()));
-        if (count != 0) {
+        stream = stream.sorted(Comparator.comparingInt(f -> -f.getLikes().size()));
+        if (count > 0) {
             stream = stream.limit(count);
         }
         return stream.toList();
