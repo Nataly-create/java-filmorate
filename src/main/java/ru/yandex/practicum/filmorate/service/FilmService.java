@@ -103,4 +103,20 @@ public class FilmService {
         log.debug("Найдено {} фильмов режиссёра {}", films.size(), directorId);
         return films;
     }
+
+    public List<Film> getMostPopularFilms(int count, Integer genreId, Integer year) {
+        Stream<Film> stream = filmStorage.getAll().stream();
+        if (year != 0) {
+            stream = stream.filter(f -> f.getReleaseDate().getYear() == year);
+        }
+        if (genreId != null) {
+            stream = stream.filter(f -> f.getGenres().contains(genreStorage.getById(genreId)));
+        }
+
+        stream = stream.sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()));
+        if (count != 0) {
+            stream = stream.limit(count);
+        }
+        return stream.toList();
+    }
 }
