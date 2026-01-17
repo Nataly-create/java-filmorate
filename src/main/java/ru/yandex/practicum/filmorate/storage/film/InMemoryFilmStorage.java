@@ -82,6 +82,11 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
     }
 
+    @Override
+    public Map<Long, Set<Long>> getAllLikes() {
+        return new HashMap<>();
+    }
+
     private long getNewId() {
         long currentMaxId = films.keySet()
                 .stream()

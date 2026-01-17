@@ -6,9 +6,11 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
+import java.util.Collection;
 import java.util.List;
 
 @Validated
@@ -61,5 +63,10 @@ private final UserService userService;
     @DeleteMapping("/{id}/friends/{friendId}")
     public void deleteFriend(@PathVariable @Positive long id, @PathVariable @Positive long friendId) {
         userService.deleteFriend(id, friendId);
+    }
+
+    @GetMapping("{id}/recommendations")
+    public Collection<Film> getRecommendationsByUserId(@PathVariable("id") @Positive long userId) {
+        return userService.getRecommendationsByUserId(userId);
     }
 }
