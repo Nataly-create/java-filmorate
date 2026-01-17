@@ -21,4 +21,6 @@ public interface FilmStorage {
 
     void deleteLike(long id, User user);
 
+    List<Film> getFilmsByDirector(long directorId);
+
 }
