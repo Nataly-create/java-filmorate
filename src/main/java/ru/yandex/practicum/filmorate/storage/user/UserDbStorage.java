@@ -14,9 +14,6 @@ import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-
 import java.sql.*;
 import java.util.List;
 
@@ -28,7 +25,6 @@ public class UserDbStorage implements UserStorage {
     protected final JdbcTemplate jdbc;
     protected final UserRowMapper mapper;
     protected final EventRowMapper mapperEvent;
-    //private final FilmDbStorage filmStorage;
 
     private static final String GET_ALL_QUERY = "SELECT * FROM users";
     private static final String DELETE_BY_ID_QUERY = "DELETE FROM users WHERE user_id = ?";
