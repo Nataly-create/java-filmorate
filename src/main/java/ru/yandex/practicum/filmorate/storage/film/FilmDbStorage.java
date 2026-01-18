@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.sql.ResultSet;
 import java.util.*;
 
@@ -13,6 +15,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.exeption.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
@@ -43,6 +46,8 @@ public class FilmDbStorage implements FilmStorage {
     private static final String ADD_FILMS_GENRE_QUERY = "INSERT INTO films_genre (film_id, genre_id) VALUES (?, ?)";
     private static final String DELETE_LIKE_QUERY = "DELETE FROM likes WHERE user_id = ? and film_id = ?";
     private static final String DELETE_FILMS_GENRE_QUERY = "DELETE FROM films_genre WHERE film_id = ?";
+    private static final String ADD_FILM_DIRECTOR_QUERY = "INSERT INTO film_directors (film_id, director_id) VALUES (?, ?)";
+    private static final String DELETE_FILM_DIRECTORS_QUERY = "DELETE FROM film_directors WHERE film_id = ?";
     private static final String GET_ALL_LIKES_QUERY = "SELECT user_id, film_id FROM likes";
 
     public FilmDbStorage(FilmRowMapper mapper, JdbcTemplate jdbc,
@@ -81,10 +86,22 @@ public class FilmDbStorage implements FilmStorage {
             film.setGenres(new LinkedHashSet<>(genreStorage.getManyById(ids)));
             updateFilmsGenres(film);
 
+            // Сохраняем режиссёров
+            updateFilmDirectors(film);
+
             film.validate();
             log.info("Film {} added", film);
         }
         return film;
+    }
+
+    private void updateFilmDirectors(Film film) {
+        jdbc.update(DELETE_FILM_DIRECTORS_QUERY, film.getId());
+        List<Object[]> batchArgs = new ArrayList<>();
+        for (Director director : film.getDirectors()) {
+            batchArgs.add(new Object[]{film.getId(), director.getId()});
+        }
+        jdbc.batchUpdate(ADD_FILM_DIRECTOR_QUERY, batchArgs);
     }
 
     private void updateFilmsGenres(Film film) {
@@ -110,6 +127,7 @@ public class FilmDbStorage implements FilmStorage {
             film.setGenres(new LinkedHashSet<>(genreStorage.getManyById(ids)));
 
             updateFilmsGenres(film);
+            updateFilmDirectors(film);
             film.validate();
             log.info("Film {} updated", film);
             return film;
@@ -152,6 +170,16 @@ public class FilmDbStorage implements FilmStorage {
                 user.getId(),
                 id);
         log.info("Like for id {} deleted", id);
+    }
+
+    public List<Film> getFilmsByDirector(long directorId) {
+        String sql = "SELECT f.* FROM films f " +
+                "JOIN film_directors fd ON f.film_id = fd.film_id " +
+                "WHERE fd.director_id = ? " +
+                "ORDER BY f.film_id";
+        List<Film> films = jdbc.query(sql, mapper, directorId);
+        // Режиссёры и другие данные уже загружены через FilmRowMapper
+        return films;
     }
 
     public Map<Long, Set<Long>> getAllLikes() {
