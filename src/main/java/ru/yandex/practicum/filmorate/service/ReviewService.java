@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exeption.NotFoundException;
 import ru.yandex.practicum.filmorate.exeption.ValidationException;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
@@ -17,6 +19,8 @@ public class ReviewService {
     public final ReviewStorage reviewStorage;
     public final UserStorage userStorage;
     public final FilmStorage filmStorage;
+    @Autowired
+    private UserService userService;
 
     public ReviewService(@Autowired @Qualifier("reviewDbStorage")ReviewStorage reviewStorage,
                          @Autowired @Qualifier("userDbStorage") UserStorage userStorage,
@@ -31,7 +35,10 @@ public class ReviewService {
         validateUserExists(review.getUserId()); // проверка на существования пользователя
 
         review.setUseful(0);
-        return reviewStorage.add(review);
+        reviewStorage.add(review);
+        userService.addEvent(review.getUserId(), review.getReviewId(), EventType.REVIEW, Operation.ADD);
+
+        return review;
     }
 
     public Review update(Review review) {
@@ -50,11 +57,14 @@ public class ReviewService {
         existing.setContent(review.getContent());
         existing.setIsPositive(review.getIsPositive());
         existing.setUseful(review.getUseful());
+        userService.addEvent(review.getUserId(), review.getReviewId(), EventType.REVIEW, Operation.UPDATE);
 
         return reviewStorage.update(existing);
     }
 
     public void delete(Long id) {
+        Review review = getById(id);
+        userService.addEvent(review.getUserId(), id, EventType.REVIEW, Operation.REMOVE);
         reviewStorage.delete(id);
     }
 

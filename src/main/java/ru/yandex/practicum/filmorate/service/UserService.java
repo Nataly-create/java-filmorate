@@ -3,6 +3,9 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -56,10 +59,20 @@ public class UserService {
 
     public void addFriend(long id, long friendId) {
         userStorage.addFriend(id, friendId);
+        addEvent(id, friendId, EventType.FRIEND, Operation.ADD);
     }
 
     public void deleteFriend(long id, long friendId) {
         userStorage.deleteFriend(id, friendId);
+        addEvent(id, friendId, EventType.FRIEND, Operation.REMOVE);
+    }
+
+    public void addEvent(long userId, long entityId, EventType eventType, Operation operation) {
+        userStorage.addEvent(userId, entityId, eventType, operation);
+    }
+
+    public List<Event> getEvents(long userId) {
+        return userStorage.getEvents(userId);
     }
 
     public Collection<Film> getRecommendationsByUserId(long userId) {

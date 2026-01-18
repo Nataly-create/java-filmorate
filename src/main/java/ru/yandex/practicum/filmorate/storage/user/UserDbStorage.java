@@ -10,8 +10,10 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exeption.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.User;
-
 import java.sql.*;
 import java.util.List;
 
@@ -22,6 +24,8 @@ public class UserDbStorage implements UserStorage {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     protected final JdbcTemplate jdbc;
     protected final UserRowMapper mapper;
+    protected final EventRowMapper mapperEvent;
+
     private static final String GET_ALL_QUERY = "SELECT * FROM users";
     private static final String DELETE_BY_ID_QUERY = "DELETE FROM users WHERE user_id = ?";
     private static final String GET_BY_ID_QUERY = "SELECT * FROM users WHERE user_id = ?";
@@ -38,6 +42,9 @@ public class UserDbStorage implements UserStorage {
             "WHERE u.user_id = ? AND f.user_id= ?)";
     private static final String DELETE_FRIEND_QUERY = "DELETE FROM friends WHERE user_id = ? and friend_id = ?";
     private static final String GET_LIKES_BY_ID_QUERY = "SELECT user_id FROM likes WHERE film_id = ?";
+    private static final String ADD_EVENT_QUERY = "INSERT INTO events(user_id, event_type, operation, entity_id) " +
+            "VALUES (?, ?, ?, ?)";
+    private static final String GET_EVENTS_QUERY = "SELECT * FROM events WHERE user_id = ?";
 
     @Override
     public User add(User user) {
@@ -151,5 +158,17 @@ public class UserDbStorage implements UserStorage {
         if (deleted == 0) {
             throw new IllegalArgumentException("Пользователь с id " + id + " не найден.");
         }
+    }
+
+    @Override
+    public void addEvent(long userId, long entityId, EventType eventType, Operation operation) {
+        getById(userId);
+        jdbc.update(ADD_EVENT_QUERY, userId, eventType.toString(), operation.toString(), entityId);
+    }
+
+    @Override
+    public List<Event> getEvents(long id) {
+        getById(id);
+        return jdbc.query(GET_EVENTS_QUERY, mapperEvent, id);
     }
 }

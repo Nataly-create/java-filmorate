@@ -5,7 +5,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -65,19 +67,16 @@ public class FilmService {
         return filmStorage.getAll();
     }
 
-    public void addLike(long filmId, long userId) {
-        log.debug("Пользователь {} поставил лайк фильму {}", userId, filmId);
-        userStorage.getById(userId);
-        filmStorage.addLike(filmId, userStorage.getById(userId));
-        log.info("Лайк добавлен: filmId={}, userId={}", filmId, userId);
+    public void addLike(long id, long userId) {
+        filmStorage.addLike(id, userStorage.getById(userId));
+        userStorage.addEvent(userId, id, EventType.LIKE, Operation.ADD);
     }
 
-    public void deleteLike(long filmId, long userId) {
-        log.debug("Удаление лайка: filmId={}, userId={}", filmId, userId);
-        Film film = filmStorage.getById(filmId);
-        film.getLikes().remove(userStorage.getById(userId).getId());
-        filmStorage.deleteLike(filmId, userStorage.getById(userId));
-        log.info("Лайк удалён: filmId={}, userId={}", filmId, userId);
+    public void deleteLike(long id, long userId) {
+        filmStorage.getById(id)
+                .getLikes()
+                .remove(userStorage.getById(userId).getId());
+        userStorage.addEvent(userId, id, EventType.LIKE, Operation.REMOVE);
     }
 
     public List<Film> getMostPopularFilms(int count) {
