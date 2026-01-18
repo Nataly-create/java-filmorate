@@ -81,4 +81,8 @@ public class FilmService {
         }
         return stream.toList();
     }
+
+    public void deleteById(long filmId) {
+        filmStorage.deleteById(filmId);
+    }
 }

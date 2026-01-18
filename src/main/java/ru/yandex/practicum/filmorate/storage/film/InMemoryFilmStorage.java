@@ -95,4 +95,12 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .orElse(0);
         return ++currentMaxId;
     }
+
+    @Override
+    public void deleteById(long id) {
+        if (!films.containsKey(id)) {
+            throw new IllegalArgumentException("Фильм с id " + id + " не найден.");
+        }
+        films.remove(id);
+    }
 }

@@ -20,6 +20,13 @@ public class ErrorHandler {
         );
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleIllegalArgument(IllegalArgumentException e) {
+        log.warn("Ресурс не найден: {}", e.getMessage());
+        return new ErrorResponse("Ресурс не найден", e.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleNotValidException(final MethodArgumentNotValidException e) {
@@ -42,5 +49,4 @@ public class ErrorHandler {
         log.warn(e.getMessage());
         return new ErrorResponse("Ошибка.", e.getMessage());
     }
-
 }

@@ -143,4 +143,13 @@ public class UserDbStorage implements UserStorage {
     public List<Long> getLikesById(int id) {
         return jdbc.queryForList(GET_LIKES_BY_ID_QUERY, Long.class, id);
     }
+
+    @Override
+    public void deleteById(long id) {
+        String sql = "DELETE FROM users WHERE user_id = ?";
+        int deleted = jdbc.update(sql, id);
+        if (deleted == 0) {
+            throw new IllegalArgumentException("Пользователь с id " + id + " не найден.");
+        }
+    }
 }

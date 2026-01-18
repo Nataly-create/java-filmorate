@@ -24,4 +24,6 @@ public interface FilmStorage {
     void deleteLike(long id, User user);
 
     public Map<Long, Set<Long>> getAllLikes();
+
+    void deleteById(long id);
 }

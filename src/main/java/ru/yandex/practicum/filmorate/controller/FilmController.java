@@ -64,4 +64,9 @@ public class FilmController {
     public void delete(@RequestBody @NonNull Film film) {
         filmService.delete(film);
     }
+
+    @DeleteMapping("/{id}")
+    public void deleteById(@PathVariable @Positive long id) {
+        filmService.deleteById(id);
+    }
 }

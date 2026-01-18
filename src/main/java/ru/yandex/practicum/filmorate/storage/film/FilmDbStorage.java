@@ -166,4 +166,21 @@ public class FilmDbStorage implements FilmStorage {
             return result;
         });
     }
+
+    @Override
+    public void deleteById(long id) {
+        String deleteLikesSql = "DELETE FROM likes WHERE film_id = ?";
+        String deleteFilmGenresSql = "DELETE FROM films_genre WHERE film_id = ?";
+        String deleteFilmDirectorsSql = "DELETE FROM film_directors WHERE film_id = ?";
+        String deleteFilmSql = "DELETE FROM films WHERE film_id = ?";
+
+        jdbc.update(deleteLikesSql, id);
+        jdbc.update(deleteFilmGenresSql, id);
+        jdbc.update(deleteFilmDirectorsSql, id);
+
+        int deleted = jdbc.update(deleteFilmSql, id);
+        if (deleted == 0) {
+            throw new IllegalArgumentException("Фильм с id " + id + " не найден.");
+        }
+    }
 }
