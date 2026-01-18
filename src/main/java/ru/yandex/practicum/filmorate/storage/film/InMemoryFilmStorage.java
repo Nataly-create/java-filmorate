@@ -98,6 +98,19 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public void deleteById(long id) {
+        if (!films.containsKey(id)) {
+            throw new IllegalArgumentException("Фильм с id " + id + " не найден.");
+        }
+        films.remove(id);
+    }
+
+    @Override
+    public boolean existsById(long id) {
+        return films.containsKey(id);
+    }
+
+    @Override
     public List<Film> getFilmsByDirector(long directorId) {
         return films.values().stream()
                 .filter(film -> film.getDirectors().stream()

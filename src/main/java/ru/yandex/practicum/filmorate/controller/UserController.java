@@ -19,7 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
-private final UserService userService;
+    private final UserService userService;
 
     @PostMapping
     public User add(@RequestBody @Valid User user) {
@@ -63,7 +63,7 @@ private final UserService userService;
 
     @DeleteMapping
     public void delete(@RequestBody @NonNull User user) {
-       userService.delete(user);
+        userService.delete(user);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
@@ -74,5 +74,10 @@ private final UserService userService;
     @GetMapping("{id}/recommendations")
     public Collection<Film> getRecommendationsByUserId(@PathVariable("id") @Positive long userId) {
         return userService.getRecommendationsByUserId(userId);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteById(@PathVariable @Positive long id) {
+        userService.deleteById(id);
     }
 }

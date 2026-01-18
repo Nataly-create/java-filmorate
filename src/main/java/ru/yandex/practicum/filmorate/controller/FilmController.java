@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -63,6 +64,16 @@ public class FilmController {
     @DeleteMapping
     public void delete(@RequestBody @NonNull Film film) {
         filmService.delete(film);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteById(@PathVariable @Positive long id) {
+        try {
+            filmService.deleteById(id);
+            return ResponseEntity.noContent().build(); // 204
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build(); // 404
+        }
     }
 
     @GetMapping("/director/{directorId}")

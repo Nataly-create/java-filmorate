@@ -21,7 +21,7 @@ public class UserService {
 
     UserService(
             @Autowired @Qualifier("userDbStorage") UserStorage userStorage,
-            @Autowired @Qualifier("filmDbStorage")FilmStorage filmStorage
+            @Autowired @Qualifier("filmDbStorage") FilmStorage filmStorage
     ) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
@@ -108,5 +108,9 @@ public class UserService {
                 .distinct()
                 .map(filmStorage::getById)
                 .collect(Collectors.toList());
+    }
+
+    public void deleteById(long userId) {
+        userStorage.deleteById(userId);
     }
 }

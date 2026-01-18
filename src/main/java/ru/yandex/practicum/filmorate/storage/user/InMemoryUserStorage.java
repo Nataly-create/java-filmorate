@@ -122,6 +122,14 @@ public class InMemoryUserStorage implements UserStorage {
         return ++currentMaxId;
     }
 
+    @Override
+    public void deleteById(long id) {
+        if (!users.containsKey(id)) {
+            throw new IllegalArgumentException("Пользователь с id " + id + " не найден.");
+        }
+        users.remove(id);
+    }
+
     public void addEvent(long userId, long entityId, EventType eventType, Operation operation) {
         Event event = Event.builder()
                 .userId(userId)

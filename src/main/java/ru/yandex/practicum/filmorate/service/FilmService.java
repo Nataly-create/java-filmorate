@@ -123,4 +123,11 @@ public class FilmService {
         }
         return stream.toList();
     }
+
+    public void deleteById(long filmId) {
+        if (!filmStorage.existsById(filmId)) {
+            throw new IllegalArgumentException("Фильм с id " + filmId + " не найден.");
+        }
+        filmStorage.deleteById(filmId);
+    }
 }

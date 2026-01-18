@@ -152,6 +152,15 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
+    public void deleteById(long id) {
+        String sql = "DELETE FROM users WHERE user_id = ?";
+        int deleted = jdbc.update(sql, id);
+        if (deleted == 0) {
+            throw new IllegalArgumentException("Пользователь с id " + id + " не найден.");
+        }
+    }
+
+    @Override
     public void addEvent(long userId, long entityId, EventType eventType, Operation operation) {
         getById(userId);
         jdbc.update(ADD_EVENT_QUERY, userId, eventType.toString(), operation.toString(), entityId);
