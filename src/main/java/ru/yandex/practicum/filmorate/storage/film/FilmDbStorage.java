@@ -180,6 +180,8 @@ public class FilmDbStorage implements FilmStorage {
         List<Film> films = jdbc.query(sql, mapper, directorId);
         // Режиссёры и другие данные уже загружены через FilmRowMapper
         return films;
+    }
+
     public Map<Long, Set<Long>> getAllLikes() {
         return jdbc.query(GET_ALL_LIKES_QUERY, (ResultSet rs) -> {
             Map<Long, Set<Long>> result = new HashMap<>();
