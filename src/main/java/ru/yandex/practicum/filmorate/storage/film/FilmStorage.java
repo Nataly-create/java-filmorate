@@ -25,5 +25,7 @@ public interface FilmStorage {
 
     public Map<Long, Set<Long>> getAllLikes();
 
+    boolean existsById(long id);
+
     void deleteById(long id);
 }

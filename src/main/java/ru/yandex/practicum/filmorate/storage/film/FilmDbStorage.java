@@ -183,4 +183,11 @@ public class FilmDbStorage implements FilmStorage {
             throw new IllegalArgumentException("Фильм с id " + id + " не найден.");
         }
     }
+
+    @Override
+    public boolean existsById(long id) {
+        String sql = "SELECT COUNT(*) FROM films WHERE film_id = ?";
+        Integer count = jdbc.queryForObject(sql, Integer.class, id);
+        return count != null && count > 0;
+    }
 }
