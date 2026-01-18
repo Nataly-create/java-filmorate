@@ -23,6 +23,8 @@ public interface FilmStorage {
 
     void deleteLike(long id, User user);
 
+    List<Film> getFilmsByDirector(long directorId);
+
     public Map<Long, Set<Long>> getAllLikes();
 
     boolean existsById(long id);

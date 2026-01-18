@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @Qualifier("inMemoryFilmStorage")
@@ -107,5 +108,13 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public boolean existsById(long id) {
         return films.containsKey(id);
+    }
+
+    @Override
+    public List<Film> getFilmsByDirector(long directorId) {
+        return films.values().stream()
+                .filter(film -> film.getDirectors().stream()
+                        .anyMatch(director -> director.getId() == directorId))
+                .collect(Collectors.toList());
     }
 }

@@ -22,9 +22,9 @@ public class ErrorHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleIllegalArgument(IllegalArgumentException e) {
+    public ErrorResponse handleIllegalArgumentException(final IllegalArgumentException e) {
         log.warn("Ресурс не найден: {}", e.getMessage());
-        return new ErrorResponse("Ресурс не найден", e.getMessage());
+        return new ErrorResponse("Ошибка.", e.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

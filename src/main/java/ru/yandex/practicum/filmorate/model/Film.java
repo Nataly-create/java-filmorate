@@ -32,6 +32,8 @@ public class Film {
     private HashSet<Genre> genres = new HashSet<>();
     @Builder.Default
     private HashSet<Long> likes = new HashSet<>();
+    @Builder.Default
+    private Set<Director> directors = new HashSet<>();
 
     public Set<Long> getLikes() {
         if (likes == null) {
@@ -45,6 +47,13 @@ public class Film {
             genres = new HashSet<>();
         }
         return genres;
+    }
+
+    public Set<Director> getDirectors() {
+        if (directors == null) {
+            directors = new HashSet<>();
+        }
+        return directors;
     }
 
     public void validate() {

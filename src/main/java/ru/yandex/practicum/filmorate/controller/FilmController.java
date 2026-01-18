@@ -75,4 +75,16 @@ public class FilmController {
             return ResponseEntity.notFound().build(); // 404
         }
     }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirector(
+            @PathVariable long directorId,
+            @RequestParam(defaultValue = "likes") String sortBy) {
+
+        if (!"year".equals(sortBy) && !"likes".equals(sortBy)) {
+            throw new IllegalArgumentException("Параметр sortBy должен быть 'year' или 'likes'");
+        }
+
+        return filmService.getFilmsByDirector(directorId, sortBy);
+    }
 }
