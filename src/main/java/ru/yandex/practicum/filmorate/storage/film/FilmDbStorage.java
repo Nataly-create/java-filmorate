@@ -2,6 +2,8 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.sql.ResultSet;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +26,6 @@ import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.util.List;
 
 @Repository
 @Qualifier("filmDbStorage")
@@ -47,6 +48,7 @@ public class FilmDbStorage implements FilmStorage {
     private static final String DELETE_FILMS_GENRE_QUERY = "DELETE FROM films_genre WHERE film_id = ?";
     private static final String ADD_FILM_DIRECTOR_QUERY = "INSERT INTO film_directors (film_id, director_id) VALUES (?, ?)";
     private static final String DELETE_FILM_DIRECTORS_QUERY = "DELETE FROM film_directors WHERE film_id = ?";
+    private static final String GET_ALL_LIKES_QUERY = "SELECT user_id, film_id FROM likes";
 
     public FilmDbStorage(FilmRowMapper mapper, JdbcTemplate jdbc,
                          @Autowired MpaStorage mpaStorage,
@@ -178,5 +180,16 @@ public class FilmDbStorage implements FilmStorage {
         List<Film> films = jdbc.query(sql, mapper, directorId);
         // Режиссёры и другие данные уже загружены через FilmRowMapper
         return films;
+    public Map<Long, Set<Long>> getAllLikes() {
+        return jdbc.query(GET_ALL_LIKES_QUERY, (ResultSet rs) -> {
+            Map<Long, Set<Long>> result = new HashMap<>();
+            while (rs.next()) {
+                long userId = rs.getLong("user_id");
+                long filmId = rs.getLong("film_id");
+
+                result.computeIfAbsent(userId, k -> new HashSet<>()).add(filmId);
+            }
+            return result;
+        });
     }
 }
