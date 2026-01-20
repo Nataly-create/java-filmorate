@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.storage.film.DirectorDbStorage;
-import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -151,7 +150,6 @@ public class FilmService {
                             .filter(Objects::nonNull),
                     filmStorage.searchFilms(query).stream()
             ).distinct().collect(Collectors.toList());
-
         } else {
             foundFilms = by.getFirst().equals("director")
                     ? directorStorage.getFilmsIdByDirector(query).stream()
