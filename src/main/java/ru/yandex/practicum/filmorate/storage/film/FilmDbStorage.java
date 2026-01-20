@@ -225,4 +225,16 @@ public class FilmDbStorage implements FilmStorage {
     public Collection<Film> searchFilms(String query) {
         return jdbc.query(GET_FILMS_BY_NAME_QUERY, mapper, query);
     }
+
+    @Override
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        String sql = "SELECT f.* FROM films f " +
+                "WHERE f.film_id IN (" +
+                "    SELECT film_id FROM likes WHERE user_id = ? " +
+                "    INTERSECT " +
+                "    SELECT film_id FROM likes WHERE user_id = ? " +
+                ") " +
+                "ORDER BY (SELECT COUNT(*) FROM likes WHERE film_id = f.film_id) DESC";
+        return jdbc.query(sql, mapper, userId, friendId);
+    }
 }

@@ -80,9 +80,7 @@ public class FilmService {
     }
 
     public void deleteLike(long id, long userId) {
-        filmStorage.getById(id)
-                .getLikes()
-                .remove(userStorage.getById(userId).getId());
+        filmStorage.deleteLike(id, userStorage.getById(userId));
         userStorage.addEvent(userId, id, EventType.LIKE, Operation.REMOVE);
     }
 
@@ -129,6 +127,22 @@ public class FilmService {
             stream = stream.limit(count);
         }
         return stream.toList();
+    }
+
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        log.debug("Поиск общих фильмов у пользователя {} и друга {}", userId, friendId);
+
+        userStorage.getById(userId);
+        userStorage.getById(friendId);
+
+        if (userStorage.getFriendsById(userId) == null || userStorage.getFriendsById(friendId) == null) {
+            throw new IllegalArgumentException("Пользователи не являются друзьями");
+        }
+
+        List<Film> commonFilms = filmStorage.getCommonFilms(userId, friendId);
+
+        log.debug("Найдено {} общих фильмов у двух друзей", commonFilms.size());
+        return commonFilms;
     }
 
     public void deleteById(long filmId) {
