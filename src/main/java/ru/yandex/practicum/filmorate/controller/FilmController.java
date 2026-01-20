@@ -9,8 +9,10 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Validated
 @Getter
@@ -86,5 +88,24 @@ public class FilmController {
         }
 
         return filmService.getFilmsByDirector(directorId, sortBy);
+    }
+
+    @GetMapping("/search")
+    public Collection<Film> searchFilms(
+            @RequestParam String query,
+            @RequestParam String by) {
+        if (query.isBlank()) {
+            throw new IllegalArgumentException("Параметр query не должен быть пустым");
+        }
+
+        List<String> searchFields = by != null
+                ? Arrays.asList(by.split(","))
+                : List.of("title");
+
+        if (!Set.of("director", "title").containsAll(searchFields)) {
+            throw new IllegalArgumentException("Параметр by должен быть 'director' или 'title'");
+        }
+
+        return filmService.searchFilms(query, searchFields);
     }
 }

@@ -49,6 +49,8 @@ public class FilmDbStorage implements FilmStorage {
     private static final String ADD_FILM_DIRECTOR_QUERY = "INSERT INTO film_directors (film_id, director_id) VALUES (?, ?)";
     private static final String DELETE_FILM_DIRECTORS_QUERY = "DELETE FROM film_directors WHERE film_id = ?";
     private static final String GET_ALL_LIKES_QUERY = "SELECT user_id, film_id FROM likes";
+    private static final String GET_FILMS_BY_NAME_QUERY = "SELECT * FROM films "
+            + "WHERE LOWER(name) LIKE LOWER(CONCAT('%', ?, '%'));";
 
     public FilmDbStorage(FilmRowMapper mapper, JdbcTemplate jdbc,
                          @Autowired MpaStorage mpaStorage,
@@ -217,5 +219,10 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT COUNT(*) FROM films WHERE film_id = ?";
         Integer count = jdbc.queryForObject(sql, Integer.class, id);
         return count != null && count > 0;
+    }
+
+    @Override
+    public Collection<Film> searchFilms(String query) {
+        return jdbc.query(GET_FILMS_BY_NAME_QUERY, mapper, query);
     }
 }

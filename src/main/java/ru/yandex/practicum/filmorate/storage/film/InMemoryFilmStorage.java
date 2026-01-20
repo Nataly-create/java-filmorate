@@ -117,4 +117,9 @@ public class InMemoryFilmStorage implements FilmStorage {
                         .anyMatch(director -> director.getId() == directorId))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public Collection<Film> searchFilms(String query) {
+        return new ArrayList<>();
+    }
 }

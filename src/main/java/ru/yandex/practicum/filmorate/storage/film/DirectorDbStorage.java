@@ -11,12 +11,22 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public class DirectorDbStorage {
     private final JdbcTemplate jdbc;
+    private static final String GET_FILMS_ID_BY_DIRECTOR_QUERY = """
+        SELECT DISTINCT film_id
+        FROM film_directors
+        WHERE director_id IN (
+            SELECT id
+            FROM directors
+            WHERE LOWER(name) LIKE LOWER(CONCAT('%', ?, '%'))
+        );
+    """;
 
     @Autowired
     public DirectorDbStorage(JdbcTemplate jdbc) {
@@ -93,5 +103,9 @@ public class DirectorDbStorage {
                 "JOIN film_directors fd ON d.id = fd.director_id " +
                 "WHERE fd.film_id = ?";
         return jdbc.query(sql, this::mapDirector, filmId);
+    }
+
+    public Collection<Long> getFilmsIdByDirector(String query) {
+        return jdbc.queryForList(GET_FILMS_ID_BY_DIRECTOR_QUERY, Long.class, query);
     }
 }

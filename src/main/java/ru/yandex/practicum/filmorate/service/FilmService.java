@@ -8,12 +8,17 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Operation;
+import ru.yandex.practicum.filmorate.storage.film.DirectorDbStorage;
+import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -22,17 +27,20 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private final GenreStorage genreStorage;
+    private final DirectorDbStorage directorStorage;
     private final DirectorService directorService;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
                        @Qualifier("userDbStorage") UserStorage userStorage,
                        GenreStorage genreStorage,
-                       DirectorService directorService) {
+                       DirectorService directorService,
+                       DirectorDbStorage directorStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.genreStorage = genreStorage;
         this.directorService = directorService;
+        this.directorStorage = directorStorage;
     }
 
     public Film add(Film film) {
@@ -129,5 +137,38 @@ public class FilmService {
             throw new IllegalArgumentException("Фильм с id " + filmId + " не найден.");
         }
         filmStorage.deleteById(filmId);
+    }
+
+    public Collection<Film> searchFilms(String query, List<String> by) {
+        log.debug("Запрос на поиск фильмов содержащих: {}, в {}.", query, by);
+
+        Collection<Film> foundFilms;
+
+        if (by.size() > 1) {
+            foundFilms = Stream.concat(
+                    directorStorage.getFilmsIdByDirector(query).stream()
+                            .map(filmStorage::getById)
+                            .filter(Objects::nonNull),
+                    filmStorage.searchFilms(query).stream()
+            ).distinct().collect(Collectors.toList());
+
+        } else {
+            foundFilms = by.getFirst().equals("director")
+                    ? directorStorage.getFilmsIdByDirector(query).stream()
+                    .map(filmStorage::getById)
+                    .collect(Collectors.toList())
+                    : filmStorage.searchFilms(query);
+        }
+
+        foundFilms = foundFilms.stream()
+                .sorted(Comparator.comparing(
+                                        (Film film) -> film.getLikes().size()
+                                ).reversed()
+                                .thenComparing(Film::getName).reversed()
+                )
+                .collect(Collectors.toList());
+
+        log.debug("Найдено {} фильмов", foundFilms.size());
+        return foundFilms;
     }
 }
