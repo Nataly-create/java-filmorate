@@ -31,7 +31,7 @@ public class UserDbStorage implements UserStorage {
     private static final String GET_BY_ID_QUERY = "SELECT * FROM users WHERE user_id = ?";
     private static final String ADD_QUERY = "INSERT INTO users(name, email, login, birthday)" +
             "VALUES (?, ?, ?, ?)";
-    private static final String UPDATE_QUERY = "UPDATE users SET name = ?, email = ?, birthday = ? WHERE user_id = ?";
+    private static final String UPDATE_QUERY = "UPDATE users SET name = ?, email = ?, birthday = ?, login = ? WHERE user_id = ?";
     private static final String ADD_FRIEND_QUERY = "INSERT INTO friends(user_id, friend_id, confirmed) VALUES (?, ?, FALSE)";
     private static final String SET_FRIENDS_CONFIRMED_QUERY = "UPDATE friends SET confirmed = TRUE " +
             "WHERE (user_id = ? AND friend_id = ?)";
@@ -76,6 +76,7 @@ public class UserDbStorage implements UserStorage {
                 user.getName(),
                 user.getEmail(),
                 user.getBirthday(),
+                user.getLogin(),
                 id) > 0) {
             user.validate();
             log.info("User {} updated", user);
