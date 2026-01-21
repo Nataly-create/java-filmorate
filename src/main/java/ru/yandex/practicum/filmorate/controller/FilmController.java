@@ -58,6 +58,15 @@ public class FilmController {
         return filmService.getMostPopularFilms(count, genreId, year);
     }
 
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam long userId, @RequestParam long friendId) {
+        if (userId == friendId) {
+            throw new IllegalArgumentException("Пользователи должны быть разными");
+        }
+
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
     @GetMapping
     public Collection<Film> getAll() {
         return filmService.getAll();
