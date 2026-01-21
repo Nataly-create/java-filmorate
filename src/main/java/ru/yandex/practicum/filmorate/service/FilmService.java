@@ -173,11 +173,7 @@ public class FilmService {
         }
 
         foundFilms = foundFilms.stream()
-                .sorted(Comparator.comparing(
-                                        (Film film) -> film.getLikes().size()
-                                ).reversed()
-                                .thenComparing(Film::getName).reversed()
-                )
+                .sorted(Comparator.comparing((Film film) -> film.getLikes().size()).reversed())
                 .collect(Collectors.toList());
 
         log.debug("Найдено {} фильмов", foundFilms.size());
