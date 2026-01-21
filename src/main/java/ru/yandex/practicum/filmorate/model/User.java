@@ -21,7 +21,7 @@ public class User {
   @NotEmpty
   private String email;
   @NotBlank
-  private final String login;
+  private String login;
   private String name;
   @Past
   private LocalDate birthday;
