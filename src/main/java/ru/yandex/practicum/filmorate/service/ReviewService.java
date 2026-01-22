@@ -47,9 +47,10 @@ public class ReviewService {
         Long reviewId  = review.getReviewId();
         Review existing = reviewStorage.getById(reviewId);
 
+        userService.addEvent(existing.getUserId(), reviewId, EventType.REVIEW, Operation.UPDATE);
+
         existing.setContent(review.getContent());
         existing.setIsPositive(review.getIsPositive());
-        userService.addEvent(review.getUserId(), review.getReviewId(), EventType.REVIEW, Operation.UPDATE);
 
         return reviewStorage.update(existing);
     }
@@ -78,7 +79,6 @@ public class ReviewService {
     public void addLike(Long reviewId, Long userId) {
         getById(reviewId); // проверка существования отзыва
         validateUserExists(userId); // проверка существования пользователя
-        userService.addEvent(userId, reviewId, EventType.LIKE, Operation.ADD);
         reviewStorage.addLike(reviewId, userId);
     }
 
