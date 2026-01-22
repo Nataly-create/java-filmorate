@@ -78,6 +78,7 @@ public class ReviewService {
     public void addLike(Long reviewId, Long userId) {
         getById(reviewId); // проверка существования отзыва
         validateUserExists(userId); // проверка существования пользователя
+        userService.addEvent(userId, reviewId, EventType.LIKE, Operation.ADD);
         reviewStorage.addLike(reviewId, userId);
     }
 
