@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exeption.NotFoundException;
-import ru.yandex.practicum.filmorate.exeption.ValidationException;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
@@ -47,16 +46,9 @@ public class ReviewService {
 
         Long reviewId  = review.getReviewId();
         Review existing = reviewStorage.getById(reviewId);
-        if (!existing.getUserId().equals(review.getUserId())) {
-            throw new ValidationException("Пользователь не должен меняться");
-        }
-        if (!existing.getFilmId().equals(review.getFilmId())) {
-            throw new ValidationException("Фильм не должен меняться");
-        }
 
         existing.setContent(review.getContent());
         existing.setIsPositive(review.getIsPositive());
-        existing.setUseful(review.getUseful());
         userService.addEvent(review.getUserId(), review.getReviewId(), EventType.REVIEW, Operation.UPDATE);
 
         return reviewStorage.update(existing);
