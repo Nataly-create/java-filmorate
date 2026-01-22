@@ -64,17 +64,18 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public Review update(Review review) {
         long id = review.getReviewId();
-        String sql = "UPDATE reviews SET content = ?, is_positive = ?, user_id = ?, film_id = ?, useful = ? " +
-                "WHERE review_id = ?";
 
-        int rowsAffected = jdbc.update(sql, review.getContent(), review.getIsPositive(), review.getUserId(),
-                review.getFilmId(), review.getUseful(), id);
+        getById(id);
+
+        String sql = "UPDATE reviews SET content = ?, is_positive = ? WHERE review_id = ?";
+        int rowsAffected = jdbc.update(sql, review.getContent(), review.getIsPositive(), id);
 
         if (rowsAffected == 0) {
             throw new NotFoundException(id, "Review");
         }
 
         log.info("Review with id {} updated", id);
+
         return getById(id);
     }
 
@@ -139,27 +140,31 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public void addDislike(Long reviewId, Long userId) {
-        Review review = getById(reviewId);
-        validateUserExists(userId); // проверка существования пользователя
+        getById(reviewId); // проверка существования отзыва
+        validateUserExists(userId);
 
-        String checkSql = "SELECT COUNT(*) FROM review_reactions WHERE review_id = ? AND user_id = ?";
+        String checkSql = "SELECT is_like FROM review_reactions WHERE review_id = ? AND user_id = ?";
         try {
             Boolean currentReaction = jdbc.queryForObject(checkSql, Boolean.class, reviewId, userId);
 
-            if (!currentReaction) { // Уже стоит дизлайк
-                return;
-            } else {
-                String updateSql = "UPDATE review_reactions SET is_like = false WHERE review_id = ? AND user_id = ?";
-                jdbc.update(updateSql, reviewId, userId);
+            if (currentReaction != null) {
+                if (!currentReaction) { // Уже стоит дизлайк
+                    return;
+                } else { // Был лайк - меняем на дизлайк
+                    String updateReactionSql = "UPDATE review_reactions SET is_like = false WHERE review_id = ? AND user_id = ?";
+                    jdbc.update(updateReactionSql, reviewId, userId);
 
-                String updateUsefulSql = "UPDATE reviews SET useful = useful - 2 WHERE review_id = ?";
-                jdbc.update(updateUsefulSql, reviewId);
-                return;
+                    // Лайк убран (-1), добавлен дизлайк (-1) = всего -2
+                    String updateUsefulSql = "UPDATE reviews SET useful = useful - 2 WHERE review_id = ?";
+                    jdbc.update(updateUsefulSql, reviewId);
+                    return;
+                }
             }
         } catch (Exception e) {
-            // Нет реакции
+            // Нет реакции - продолжаем
         }
 
+        // Первый дизлайк
         String insertSql = "INSERT INTO review_reactions (review_id, user_id, is_like) VALUES (?, ?, false)";
         jdbc.update(insertSql, reviewId, userId);
 
