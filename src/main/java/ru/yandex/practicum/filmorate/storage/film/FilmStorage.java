@@ -26,8 +26,6 @@ public interface FilmStorage {
 
     List<Film> getFilmsByDirector(long directorId);
 
-    List<Film> getFilmsByIds(long[] ids);
-
     public Map<Long, Set<Long>> getAllLikes();
 
     boolean existsById(long id);
@@ -37,7 +35,4 @@ public interface FilmStorage {
     public Collection<Film> searchFilms(String query);
 
     List<Film> getCommonFilms(long userId, long friendId);
-
-    void updateFilmsGenres(Film film);
-
 }

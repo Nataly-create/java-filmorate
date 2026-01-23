@@ -108,5 +108,4 @@ public class DirectorDbStorage {
     public Collection<Long> getFilmsIdByDirector(String query) {
         return jdbc.queryForList(GET_FILMS_ID_BY_DIRECTOR_QUERY, Long.class, query);
     }
-
 }

@@ -20,7 +20,7 @@ public class FilmRowMapper implements RowMapper<Film> {
     private final MpaStorage mpaStorage;
     private final GenreDbStorage genreDbStorage;
     private final UserDbStorage userDbStorage;
-    private final DirectorDbStorage directorDbStorage;
+    private final DirectorDbStorage directorDbStorage; // Добавьте эту строку
 
     @Override
     public Film mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -38,7 +38,7 @@ public class FilmRowMapper implements RowMapper<Film> {
         if (film != null) {
             film.setGenres(new HashSet<>(genreDbStorage.getGenresById((int) film.getId())));
             film.setLikes(new HashSet<>(userDbStorage.getLikesById((int) film.getId())));
-            film.setDirectors(new HashSet<>(directorDbStorage.getDirectorsByFilmId((int) film.getId())));
+            film.setDirectors(new HashSet<>(directorDbStorage.getDirectorsByFilmId((int) film.getId()))); // Добавьте
         }
         return film;
     }
