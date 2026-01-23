@@ -20,6 +20,10 @@ public class GenreService {
         return genreStorage.getAll();
     }
 
+    public List<Genre> getManyById(int[] ids) {
+        return genreStorage.getManyById(ids);
+    }
+
     public Genre getById(int id) {
         return genreStorage.getById(id);
     }

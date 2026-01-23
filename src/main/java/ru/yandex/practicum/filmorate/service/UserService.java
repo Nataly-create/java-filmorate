@@ -101,13 +101,11 @@ public class UserService {
             return Collections.emptyList();
         }
 
-        return intersectionCounts.entrySet().stream()
+        return filmStorage.getFilmsByIds(intersectionCounts.entrySet().stream()
                 .filter(entry -> entry.getValue() == maxIntersections)
                 .flatMap(entry -> allLikes.get(entry.getKey()).stream())
                 .filter(filmId -> !targetUserLikes.contains(filmId))
-                .distinct()
-                .map(filmStorage::getById)
-                .collect(Collectors.toList());
+                .distinct().mapToLong(Long::longValue).toArray());
     }
 
     public void deleteById(long userId) {

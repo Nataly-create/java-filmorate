@@ -7,16 +7,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.storage.film.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -28,24 +26,39 @@ public class FilmService {
     private final GenreStorage genreStorage;
     private final DirectorDbStorage directorStorage;
     private final DirectorService directorService;
+    private final MpaService mpaService;
+    private final GenreService genreService;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
                        @Qualifier("userDbStorage") UserStorage userStorage,
                        GenreStorage genreStorage,
                        DirectorService directorService,
-                       DirectorDbStorage directorStorage) {
+                       DirectorDbStorage directorStorage,
+                       MpaService mpaService,
+                       GenreService genreService) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.genreStorage = genreStorage;
         this.directorService = directorService;
         this.directorStorage = directorStorage;
+        this.mpaService = mpaService;
+        this.genreService = genreService;
     }
 
     public Film add(Film film) {
         log.debug("Создание фильма: {}", film.getName());
         film.validate();
+
+        int mpaId = film.getMpa().getId();
+        mpaService.getById(mpaId);
+
         Film saved = filmStorage.add(film);
+
+        int[] ids = film.getGenres().stream().mapToInt(Genre::getId).toArray();
+        film.setGenres(new LinkedHashSet<>(genreService.getManyById(ids)));
+        filmStorage.updateFilmsGenres(film);
+
         log.info("Фильм добавлен: '{}', ID={}", saved.getName(), saved.getId());
         return saved;
     }
@@ -54,6 +67,11 @@ public class FilmService {
         log.debug("Обновление фильма: {}", film.getId());
         film.validate();
         Film updated = filmStorage.update(film);
+
+        int[] ids = film.getGenres().stream().mapToInt(Genre::getId).toArray();
+        film.setGenres(new LinkedHashSet<>(genreService.getManyById(ids)));
+        filmStorage.updateFilmsGenres(film);
+
         log.info("Фильм обновлён: '{}', ID={}", updated.getName(), updated.getId());
         return updated;
     }
@@ -119,7 +137,8 @@ public class FilmService {
             stream = stream.filter(f -> f.getReleaseDate().getYear() == year);
         }
         if (genreId != null) {
-            stream = stream.filter(f -> f.getGenres().contains(genreStorage.getById(genreId)));
+            Genre genre = genreStorage.getById(genreId);
+            stream = stream.filter(f -> f.getGenres().contains(genre));
         }
 
         stream = stream.sorted(Comparator.comparingInt(f -> -f.getLikes().size()));
@@ -159,16 +178,16 @@ public class FilmService {
 
         if (by.size() > 1) {
             foundFilms = Stream.concat(
-                    directorStorage.getFilmsIdByDirector(query).stream()
-                            .map(filmStorage::getById)
+                   filmStorage.getFilmsByIds(directorStorage.getFilmsIdByDirector(query)
+                                   .stream().mapToLong(Long::longValue).toArray())
+                           .stream()
                             .filter(Objects::nonNull),
                     filmStorage.searchFilms(query).stream()
             ).distinct().collect(Collectors.toList());
         } else {
             foundFilms = by.getFirst().equals("director")
-                    ? directorStorage.getFilmsIdByDirector(query).stream()
-                    .map(filmStorage::getById)
-                    .collect(Collectors.toList())
+                    ? filmStorage.getFilmsByIds(directorStorage.getFilmsIdByDirector(query)
+                    .stream().mapToLong(Long::longValue).toArray())
                     : filmStorage.searchFilms(query);
         }
 
