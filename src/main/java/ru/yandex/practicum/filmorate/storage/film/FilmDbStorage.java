@@ -1,13 +1,11 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.sql.ResultSet;
 import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -19,13 +17,10 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.genre.GenreRowMapper;
-import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
-import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
-
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.stream.Collectors;
 
 @Repository
 @Qualifier("filmDbStorage")
@@ -33,8 +28,6 @@ public class FilmDbStorage implements FilmStorage {
     private static final Logger log = LoggerFactory.getLogger(FilmController.class);
     protected final JdbcTemplate jdbc;
     protected final FilmRowMapper mapper;
-    private final MpaStorage mpaStorage;
-    private final GenreStorage genreStorage;
 
     private static final String GET_ALL_QUERY = "SELECT * FROM films";
     private static final String DELETE_BY_ID_QUERY = "DELETE FROM films WHERE film_id = ?";
@@ -49,16 +42,12 @@ public class FilmDbStorage implements FilmStorage {
     private static final String ADD_FILM_DIRECTOR_QUERY = "INSERT INTO film_directors (film_id, director_id) VALUES (?, ?)";
     private static final String DELETE_FILM_DIRECTORS_QUERY = "DELETE FROM film_directors WHERE film_id = ?";
     private static final String GET_ALL_LIKES_QUERY = "SELECT user_id, film_id FROM likes";
+    private static final String GET_FILMS_BY_IDS = "SELECT * FROM films WHERE film_id in (";
     private static final String GET_FILMS_BY_NAME_QUERY = "SELECT * FROM films "
             + "WHERE LOWER(name) LIKE LOWER(CONCAT('%', ?, '%'));";
 
-    public FilmDbStorage(FilmRowMapper mapper, JdbcTemplate jdbc,
-                         @Autowired MpaStorage mpaStorage,
-                         @Autowired GenreStorage genreStorage,
-                         @Autowired GenreRowMapper genreRowMapper) {
+    public FilmDbStorage(FilmRowMapper mapper, JdbcTemplate jdbc) {
         this.mapper = mapper;
-        this.mpaStorage = mpaStorage;
-        this.genreStorage = genreStorage;
         this.jdbc = jdbc;
     }
 
@@ -68,9 +57,6 @@ public class FilmDbStorage implements FilmStorage {
         jdbc.update(connection -> {
             PreparedStatement ps = connection
                     .prepareStatement(ADD_QUERY, Statement.RETURN_GENERATED_KEYS);
-
-            int mpaId = film.getMpa().getId();
-            mpaStorage.getById(mpaId);
 
             ps.setString(1, film.getName());
             ps.setString(2, film.getDescription());
@@ -83,10 +69,6 @@ public class FilmDbStorage implements FilmStorage {
         Integer id = keyHolder.getKeyAs(Integer.class);
         if (id != null) {
             film.setId(Long.valueOf(id));
-
-            int[] ids = film.getGenres().stream().mapToInt(Genre::getId).toArray();
-            film.setGenres(new LinkedHashSet<>(genreStorage.getManyById(ids)));
-            updateFilmsGenres(film);
 
             // Сохраняем режиссёров
             updateFilmDirectors(film);
@@ -106,7 +88,7 @@ public class FilmDbStorage implements FilmStorage {
         jdbc.batchUpdate(ADD_FILM_DIRECTOR_QUERY, batchArgs);
     }
 
-    private void updateFilmsGenres(Film film) {
+    public void updateFilmsGenres(Film film) {
         jdbc.update(DELETE_FILMS_GENRE_QUERY, film.getId());
         List<Object[]> params = new ArrayList<>();
         for (Genre g : film.getGenres()) {
@@ -125,10 +107,6 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDuration(),
                 id) > 0) {
 
-            int[] ids = film.getGenres().stream().mapToInt(Genre::getId).toArray();
-            film.setGenres(new LinkedHashSet<>(genreStorage.getManyById(ids)));
-
-            updateFilmsGenres(film);
             updateFilmDirectors(film);
             film.validate();
             log.info("Film {} updated", film);
@@ -146,6 +124,23 @@ public class FilmDbStorage implements FilmStorage {
             log.warn("Film mit id {} not found", id);
             throw new NotFoundException(id, "Film");
         }
+    }
+
+    @Override
+    public List<Film> getFilmsByIds(long[] ids) {
+        String params = Arrays.stream(ids).mapToObj(String::valueOf)
+                .collect(Collectors.joining(","));
+        List<Film> res = jdbc.query(GET_FILMS_BY_IDS + params + ")", mapper);
+        List<Long> idRes = res.stream().map(Film::getId).toList();
+        if (ids.length > res.size()) {
+            for (long id : ids) {
+                if (!idRes.contains(id)) {
+                    log.warn("Film mit id {} not found", id);
+                    throw new NotFoundException(id, "Film");
+                }
+            }
+        }
+        return res;
     }
 
     public List<Film> getAll() {

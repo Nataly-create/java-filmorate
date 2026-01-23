@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storage.review;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -10,8 +9,6 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.controller.ReviewController;
 import ru.yandex.practicum.filmorate.exeption.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
@@ -23,22 +20,14 @@ public class ReviewDbStorage implements ReviewStorage {
     private static final Logger log = LoggerFactory.getLogger(ReviewController.class);
     private final JdbcTemplate jdbc;
     private final ReviewRowMapper mapper;
-    private final UserStorage userStorage;
-    private final FilmStorage filmStorage;
 
-    public ReviewDbStorage(ReviewRowMapper mapper, JdbcTemplate jdbc,
-                           @Autowired @Qualifier("userDbStorage") UserStorage userStorage,
-                           @Autowired @Qualifier("filmDbStorage") FilmStorage filmStorage) {
+    public ReviewDbStorage(ReviewRowMapper mapper, JdbcTemplate jdbc) {
         this.mapper = mapper;
         this.jdbc = jdbc;
-        this.userStorage = userStorage;
-        this.filmStorage = filmStorage;
     }
 
     @Override
     public Review add(Review review) {
-        validateFilmExists(review.getFilmId());
-        validateUserExists(review.getUserId());
         String sql = "INSERT INTO reviews (content, is_positive, user_id, film_id, useful) " +
                 "VALUES (?, ?, ?, ?, ?)";
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
@@ -122,8 +111,6 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public void addLike(Long reviewId, Long userId) {
         Review review = getById(reviewId);
-        validateUserExists(userId); // проверка существования пользователя
-
         String checkSql = "SELECT COUNT(*) FROM review_reactions WHERE review_id = ? AND user_id = ?";
         Integer count = jdbc.queryForObject(checkSql, Integer.class, reviewId, userId);
 
@@ -141,7 +128,6 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public void addDislike(Long reviewId, Long userId) {
         getById(reviewId); // проверка существования отзыва
-        validateUserExists(userId);
 
         String checkSql = "SELECT is_like FROM review_reactions WHERE review_id = ? AND user_id = ?";
         try {
@@ -194,19 +180,4 @@ public class ReviewDbStorage implements ReviewStorage {
         }
     }
 
-    public void validateFilmExists(Long filmId) {
-        try {
-            filmStorage.getById(filmId);
-        } catch (NotFoundException e) {
-            throw new NotFoundException(filmId, "Film");
-        }
-    }
-
-    public void validateUserExists(Long userId) {
-        try {
-            userStorage.getById(userId);
-        } catch (NotFoundException e) {
-            throw new NotFoundException(userId, "User");
-        }
-    }
 }
