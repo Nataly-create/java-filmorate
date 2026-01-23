@@ -7,7 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.yandex.practicum.filmorate.exeption.ValidationException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -19,12 +21,14 @@ public class User {
   @NotEmpty
   private String email;
   @NotBlank
-  private final String login;
+  private String login;
   private String name;
   @Past
   private LocalDate birthday;
   @Builder.Default
   private HashSet<Long> friends = new HashSet<>();
+  @Builder.Default
+  private ArrayList<Event> events = new ArrayList<>();
 
   public void validate() {
     StringBuilder message = new StringBuilder();
@@ -49,4 +53,12 @@ public class User {
     }
     return friends;
   }
+
+  public List<Event> getEvents() {
+    if (events == null) {
+      events = new ArrayList<>();
+    }
+    return events;
+  }
+
 }

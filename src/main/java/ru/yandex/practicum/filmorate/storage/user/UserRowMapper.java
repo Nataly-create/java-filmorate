@@ -17,6 +17,7 @@ public class UserRowMapper implements RowMapper<User> {
                 .id(rs.getLong("user_id"))
                 .name(rs.getString("name"))
                 .email(rs.getString("email"))
+                .login(rs.getString("login"))
                 .birthday(Optional.ofNullable(rs.getDate("birthday"))
                         .map(Date::toLocalDate)
                         .orElse(null))

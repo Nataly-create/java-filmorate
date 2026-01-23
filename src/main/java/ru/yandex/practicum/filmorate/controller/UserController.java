@@ -6,9 +6,12 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
+import java.util.Collection;
 import java.util.List;
 
 @Validated
@@ -16,7 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
-private final UserService userService;
+    private final UserService userService;
 
     @PostMapping
     public User add(@RequestBody @Valid User user) {
@@ -53,13 +56,28 @@ private final UserService userService;
         return userService.getAll();
     }
 
+    @GetMapping("/{id}/feed")
+    public List<Event> getEvents(@PathVariable @Positive long id) {
+        return userService.getEvents(id);
+    }
+
     @DeleteMapping
     public void delete(@RequestBody @NonNull User user) {
-       userService.delete(user);
+        userService.delete(user);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
     public void deleteFriend(@PathVariable @Positive long id, @PathVariable @Positive long friendId) {
         userService.deleteFriend(id, friendId);
+    }
+
+    @GetMapping("{id}/recommendations")
+    public Collection<Film> getRecommendationsByUserId(@PathVariable("id") @Positive long userId) {
+        return userService.getRecommendationsByUserId(userId);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteById(@PathVariable @Positive long id) {
+        userService.deleteById(id);
     }
 }

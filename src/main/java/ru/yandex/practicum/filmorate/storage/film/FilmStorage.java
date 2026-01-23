@@ -3,7 +3,10 @@ package ru.yandex.practicum.filmorate.storage.film;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface FilmStorage {
 
@@ -20,5 +23,21 @@ public interface FilmStorage {
     void addLike(long id, User user);
 
     void deleteLike(long id, User user);
+
+    List<Film> getFilmsByDirector(long directorId);
+
+    List<Film> getFilmsByIds(long[] ids);
+
+    public Map<Long, Set<Long>> getAllLikes();
+
+    boolean existsById(long id);
+
+    void deleteById(long id);
+
+    public Collection<Film> searchFilms(String query);
+
+    List<Film> getCommonFilms(long userId, long friendId);
+
+    void updateFilmsGenres(Film film);
 
 }
